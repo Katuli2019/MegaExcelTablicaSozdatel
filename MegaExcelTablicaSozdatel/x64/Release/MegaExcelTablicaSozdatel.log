@@ -1,0 +1,10 @@
+﻿  MegaExcelTablicaSozdatel.cpp
+D:\VSProjects\MegaExcelTablicaSozdatel\MegaExcelTablicaSozdatel\MegaExcelTablicaSozdatel.cpp(209,34): warning C4101: e: неиспользованная локальная переменная
+  Создание кода
+  1 of 665 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Создание кода завершено
+  MegaExcelTablicaSozdatel.vcxproj -> D:\VSProjects\MegaExcelTablicaSozdatel\x64\Release\MegaExcelTablicaSozdatel.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

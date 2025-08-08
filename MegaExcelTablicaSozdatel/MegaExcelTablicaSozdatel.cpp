@@ -18,12 +18,13 @@ struct SortByLengthThenLex {
 };
 struct Values
 {
-    int* marks;
+    int* marks = nullptr;
     const char8_t* language = u8"абв";
+    Values() : marks(nullptr), language(u8"абв") {}
 };
 std::map<std::string, Values, SortByLengthThenLex> marksForEachGrade;
 
-void AnalyzeDocument(const std::filesystem::path path);
+std::string AnalyzeDocument(const std::filesystem::path& path);
 xlnt::workbook CreateAndFormatOutputExcelFile();
 void FillOutputDocument(xlnt::workbook& outputExcel);
 void ClearCache();
@@ -31,6 +32,9 @@ void ClearCache();
 int main()
 {
     std::setlocale(LC_ALL, "ru_RU.UTF-8");
+
+	std::cout << reinterpret_cast<const char*>(u8"Положите все нужные файлы в папку \"excel files\" и нажмите любую кнопку для продолжения.\nУбедитесь что Otchet.xlsx закрыт, если вы уже запускали эту программу.") << std::endl;
+	system("pause");
     
     borderProperty.style(xlnt::border_style::thin);
     borderProperty.color(xlnt::color::black());
@@ -42,16 +46,30 @@ int main()
 
     xlnt::workbook outputExcel = CreateAndFormatOutputExcelFile();
 
-    std::string path = ".";
-    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+	std::vector<std::string> successfulInputDocumentPaths;
+    std::string path = "./excel files";
+    for (const auto& entry : std::filesystem::directory_iterator(path)) 
+    {
         if (entry.path().extension() == ".xlsx") {
-            AnalyzeDocument(entry.path());
+            std::string inputDocumentPath = AnalyzeDocument(entry.path());
+            if (inputDocumentPath != "NOTATARGETDOCUMENT")
+            {
+				successfulInputDocumentPaths.push_back(inputDocumentPath);
+            }
         }
     }
 
     FillOutputDocument(outputExcel);
     ClearCache();
     outputExcel.save("Otchet.xlsx");
+
+	std::cout << reinterpret_cast<const char*>(u8"Готово! Было найдено ") << successfulInputDocumentPaths.size() << 
+        reinterpret_cast<const char*>(u8" документов и создан файл Otchet.xlsx\nВот список найденных документов:") << std::endl;
+    for (std::string & documentPath : successfulInputDocumentPaths)
+    {
+        std::cout << documentPath << std::endl;
+	}
+
     return 0;
 }
 
@@ -126,7 +144,7 @@ xlnt::workbook CreateAndFormatOutputExcelFile()
     return outputExcel;
 }
 
-void AnalyzeDocument(std::filesystem::path path)
+std::string AnalyzeDocument(const std::filesystem::path& path)
 {
     try
     {
@@ -145,7 +163,7 @@ void AnalyzeDocument(std::filesystem::path path)
             }
         }
         if (!isTargetDocument)
-            return;
+            return "NOTATARGETDOCUMENT";
 
         std::string tempString = inputWorkbook.active_sheet().cell(3, 10).to_string();
         std::string grade = tempString.substr(0, tempString.find("("));
@@ -185,6 +203,8 @@ void AnalyzeDocument(std::filesystem::path path)
                 }
             }
         }
+
+		return path.string();
     }
     catch (const std::exception& e)
     {
