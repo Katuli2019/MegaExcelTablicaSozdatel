@@ -70,6 +70,7 @@ int main()
         std::cout << documentPath << std::endl;
 	}
 
+    system("pause");
     return 0;
 }
 

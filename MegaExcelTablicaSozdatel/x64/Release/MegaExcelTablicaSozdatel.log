@@ -1,5 +1,5 @@
 ﻿  MegaExcelTablicaSozdatel.cpp
-D:\VSProjects\MegaExcelTablicaSozdatel\MegaExcelTablicaSozdatel\MegaExcelTablicaSozdatel.cpp(209,34): warning C4101: e: неиспользованная локальная переменная
+D:\VSProjects\MegaExcelTablicaSozdatel\MegaExcelTablicaSozdatel\MegaExcelTablicaSozdatel.cpp(210,34): warning C4101: e: неиспользованная локальная переменная
   Создание кода
   1 of 665 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
