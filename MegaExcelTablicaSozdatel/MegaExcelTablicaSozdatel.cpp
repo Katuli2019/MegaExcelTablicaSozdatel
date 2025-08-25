@@ -28,22 +28,15 @@ std::string AnalyzeDocument(const std::filesystem::path& path);
 xlnt::workbook CreateAndFormatOutputExcelFile();
 void FillOutputDocument(xlnt::workbook& outputExcel);
 void ClearCache();
+void Initialize();
 
 int main()
 {
-    std::setlocale(LC_ALL, "ru_RU.UTF-8");
+	Initialize();
 
 	std::cout << reinterpret_cast<const char*>(u8"Положите все нужные файлы в папку \"excel files\" и нажмите любую кнопку для продолжения.\nУбедитесь что Otchet.xlsx закрыт, если вы уже запускали эту программу.") << std::endl;
 	system("pause");
     
-    borderProperty.style(xlnt::border_style::thin);
-    borderProperty.color(xlnt::color::black());
-    
-    borderMedium.side(xlnt::border_side::start, borderProperty);
-    borderMedium.side(xlnt::border_side::end, borderProperty);
-    borderMedium.side(xlnt::border_side::top, borderProperty);
-    borderMedium.side(xlnt::border_side::bottom, borderProperty);
-
     xlnt::workbook outputExcel = CreateAndFormatOutputExcelFile();
 
 	std::vector<std::string> successfulInputDocumentPaths;
@@ -72,6 +65,19 @@ int main()
 
     system("pause");
     return 0;
+}
+
+void Initialize()
+{
+    std::setlocale(LC_ALL, "ru_RU.UTF-8");
+
+    borderProperty.style(xlnt::border_style::thin);
+    borderProperty.color(xlnt::color::black());
+
+    borderMedium.side(xlnt::border_side::start, borderProperty);
+    borderMedium.side(xlnt::border_side::end, borderProperty);
+    borderMedium.side(xlnt::border_side::top, borderProperty);
+    borderMedium.side(xlnt::border_side::bottom, borderProperty);
 }
 
 xlnt::font boldTimesNewRoman = xlnt::font().bold(true).size(12).name("Times New Roman");
@@ -166,49 +172,67 @@ std::string AnalyzeDocument(const std::filesystem::path& path)
         if (!isTargetDocument)
             return "NOTATARGETDOCUMENT";
 
-        std::string tempString = inputWorkbook.active_sheet().cell(3, 10).to_string();
-        std::string grade = tempString.substr(0, tempString.find("("));
-
-		std::string language = tempString.substr(tempString.find("("));
-        if (language == reinterpret_cast<const char*>(u8"(Русский язык)"))
+        for (int j = 10; j < 50; j++)
         {
-            marksForEachGrade[grade].language = u8"рус";
-        }
-        else if (language == reinterpret_cast<const char*>(u8"(Казахский язык)"))
-        {
-			marksForEachGrade[grade].language = u8"каз";
-        }
-
-        marksForEachGrade[grade].marks = new int[5];
-        for (int i = 0; i < 5; i++)
-        {
-            marksForEachGrade[grade].marks[i] = 0;
-		}
-
-        for (int i = 10;; i++)
-        {
-			std::string potentialMark = inputWorkbook.active_sheet().cell(marksColumn, i).to_string();
-            if (potentialMark.empty())
+            if (inputWorkbook.active_sheet().cell(marksColumn, j).to_string().empty())
             {
-                break;
-            }
+				continue;
+			}
             else
             {
-                if (potentialMark == reinterpret_cast<const char*>(u8"Н/а"))
+                std::string tempString = inputWorkbook.active_sheet().cell(3, j).to_string();
+                std::string grade = tempString.substr(0, tempString.find("("));
+
+                std::string language = tempString.substr(tempString.find("("));
+                if (language == reinterpret_cast<const char*>(u8"(Русский язык)"))
                 {
-                    marksForEachGrade[grade].marks[0]++;
+                    marksForEachGrade[grade].language = u8"рус";
                 }
-                else
+                else if (language == reinterpret_cast<const char*>(u8"(Казахский язык)"))
                 {
-					marksForEachGrade[grade].marks[std::stoi(potentialMark) - 1]++;
+                    marksForEachGrade[grade].language = u8"каз";
                 }
+
+                marksForEachGrade[grade].marks = new int[5];
+                for (int i = 0; i < 5; i++)
+                {
+                    marksForEachGrade[grade].marks[i] = 0;
+                }
+
+                for (int i = 10;; i++)
+                {
+                    if (inputWorkbook.active_sheet().cell(5, i).to_string().empty())
+                    {
+                        break;
+					}
+                    else
+                    {
+                        std::string potentialMark = inputWorkbook.active_sheet().cell(marksColumn, i).to_string();
+
+                        if (potentialMark.empty())
+                        {
+                            continue;
+                        }
+                        else if (potentialMark == reinterpret_cast<const char*>(u8"Н/а"))
+                        {
+                            marksForEachGrade[grade].marks[0]++;
+                        }
+                        else
+                        {
+                            marksForEachGrade[grade].marks[std::stoi(potentialMark) - 1]++;
+                        }
+                    }
+                }
+
+                return path.string();
             }
         }
 
-		return path.string();
+        return "NOTATARGETDOCUMENT";
     }
     catch (const std::exception& e)
     {
+		return "NOTATARGETDOCUMENT";
         std::cout << "Error opening: " << path.string() << std::endl;
     }
 }
